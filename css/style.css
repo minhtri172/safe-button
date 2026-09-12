@@ -1,0 +1,371 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --ink: #17231e;
+    --muted: #708079;
+    --paper: #fffdf9;
+    --mint: #dcefe1;
+    --green: #1d7a55;
+    --green-dark: #145a3e;
+    --line: #dbe6de;
+    --blue: #dbe8f1;
+}
+
+body {
+    background: #e9f1eb;
+    color: var(--ink);
+    font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 32px 20px;
+    position: relative;
+}
+
+body::before,
+body::after {
+    content: '';
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: -1;
+}
+
+body::before {
+    width: 300px;
+    height: 300px;
+    background: #cfe4d5;
+    top: -90px;
+    left: -90px;
+}
+
+body::after {
+    width: 220px;
+    height: 220px;
+    background: #f5dec3;
+    right: -60px;
+    bottom: -70px;
+}
+
+.dashboard-card {
+    background: var(--paper);
+    width: 100%;
+    max-width: 530px;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 24px;
+    box-shadow: 0 24px 60px rgba(34, 63, 46, 0.13);
+    padding: 34px;
+}
+
+.status-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 38px;
+}
+
+.brand-mark {
+    background: var(--ink);
+    color: var(--paper);
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 13px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.status-copy {
+    display: grid;
+    gap: 2px;
+    flex: 1;
+}
+
+.eyebrow,
+.section-kicker {
+    color: var(--green);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+}
+
+.status-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.status-badge {
+    background: var(--mint);
+    color: var(--green-dark);
+    padding: 8px 11px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+}
+
+.intro-section {
+    margin-bottom: 28px;
+}
+
+.date-line {
+    color: var(--muted);
+    font-size: 0.75rem;
+    margin-bottom: 12px;
+}
+
+h1,
+h2 {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 400;
+}
+
+h1 {
+    font-size: clamp(2.5rem, 8vw, 3.8rem);
+    line-height: 0.98;
+    letter-spacing: -1.8px;
+}
+
+h1 em {
+    color: var(--green);
+    font-style: italic;
+}
+
+.intro-copy {
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.55;
+    max-width: 340px;
+    margin-top: 16px;
+}
+
+.timer-section {
+    background: var(--mint);
+    border-radius: 18px;
+    padding: 20px 22px 18px;
+    margin-bottom: 16px;
+    text-align: left;
+}
+
+.timer-heading,
+.contacts-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.countdown-label {
+    color: var(--green-dark);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+}
+
+.timer-state {
+    color: var(--green-dark);
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.time-display {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: clamp(3rem, 13vw, 5.3rem);
+    font-weight: 800;
+    letter-spacing: -3px;
+    line-height: 1.05;
+    color: var(--ink);
+    margin: 11px 0 14px;
+}
+
+.timer-bar {
+    height: 5px;
+    background: rgba(29, 122, 85, 0.16);
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.timer-bar span {
+    display: block;
+    height: 100%;
+    width: 74%;
+    background: var(--green);
+    border-radius: inherit;
+}
+
+.timer-caption {
+    color: #547161;
+    font-size: 0.72rem;
+    line-height: 1.4;
+    margin-top: 11px;
+}
+
+.safe-button {
+    background: var(--green);
+    color: white;
+    border: none;
+    width: 100%;
+    padding: 17px;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 13px;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 8px 18px rgba(29, 122, 85, 0.2);
+}
+
+.safe-button:hover {
+    background: var(--green-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 11px 24px rgba(29, 122, 85, 0.25);
+}
+
+.safe-button:active {
+    transform: translateY(1px);
+}
+
+.check-icon {
+    font-size: 1.1rem;
+    margin-right: 3px;
+}
+
+.safe-button:disabled {
+    background: #8aa99a;
+    cursor: wait;
+    transform: none;
+    box-shadow: none;
+}
+
+.action-message {
+    min-height: 18px;
+    font-size: 0.72rem;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.action-message.is-sending {
+    color: var(--muted);
+}
+
+.action-message.is-success {
+    color: var(--green);
+    font-weight: 700;
+}
+
+.action-message.is-error {
+    color: #a34e42;
+}
+
+.last-click-text {
+    color: var(--muted);
+    font-size: 0.72rem;
+    margin: 12px 0 30px;
+}
+
+.contacts-panel {
+    border-top: 1px solid var(--line);
+    padding-top: 22px;
+    text-align: left;
+}
+
+.contacts-heading {
+    align-items: flex-end;
+    margin-bottom: 16px;
+}
+
+.contacts-title {
+    font-size: 1.35rem;
+    line-height: 1.1;
+    margin-top: 4px;
+}
+
+.contact-count {
+    color: var(--muted);
+    font-size: 0.72rem;
+}
+
+.contact-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.88rem;
+    padding: 11px 0;
+}
+
+.contact-row:not(:last-child) {
+    border-bottom: 1px dashed var(--line);
+}
+
+.contact-avatar {
+    display: grid;
+    place-items: center;
+    flex: 0 0 30px;
+    width: 30px;
+    height: 30px;
+    background: #f4d9c8;
+    color: #7b4e38;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.avatar-blue {
+    background: var(--blue);
+    color: #486579;
+}
+
+.contact-name {
+    font-weight: 700;
+    flex: 1;
+}
+
+.contact-method {
+    color: var(--muted);
+    font-size: 0.75rem;
+}
+
+.footer-note {
+    color: var(--muted);
+    font-size: 0.68rem;
+    text-align: center;
+    margin-top: 28px;
+}
+
+.footer-note span {
+    color: var(--green);
+    font-size: 0.55rem;
+    vertical-align: 1px;
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 14px;
+    }
+
+    .dashboard-card {
+        padding: 24px 20px;
+        border-radius: 20px;
+    }
+
+    .status-header {
+        margin-bottom: 32px;
+    }
+}

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Check-In Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <main class="dashboard-card">
+        <div class="status-header">
+            <div class="brand-mark" aria-hidden="true">DC</div>
+            <div class="status-copy">
+                <span class="eyebrow">Daily check-in</span>
+                <span class="status-title">You are protected</span>
+            </div>
+            <span class="status-badge" id="statusBadge"><span class="status-dot"></span>Active</span>
+        </div>
+
+        <section class="intro-section" aria-labelledby="page-title">
+            <p class="date-line">Wednesday, September 12</p>
+            <h1 id="page-title">A quick moment<br><em>to check in.</em></h1>
+            <p class="intro-copy">Let your people know you are safe before the next check-in window closes.</p>
+        </section>
+
+        <div class="timer-section">
+            <div class="timer-heading">
+                <p class="countdown-label">Next check-in window</p>
+                <span class="timer-state">Open</span>
+            </div>
+            <div class="time-display" id="countdownTimer">23:59:59</div>
+            <div class="timer-bar" aria-hidden="true"><span></span></div>
+            <p class="timer-caption">Your trusted contacts are notified only if this window closes.</p>
+        </div>
+
+        <button class="safe-button" id="safeBtn" type="button"><span class="check-icon" aria-hidden="true">&#10003;</span> I am safe</button>
+        <p class="action-message" id="actionMessage" role="status" aria-live="polite"></p>
+        <p class="last-click-text">Last check-in: Today at 8:00 AM</p>
+
+        <div class="contacts-panel">
+            <div class="contacts-heading">
+                <div>
+                    <p class="section-kicker">Your safety net</p>
+                    <h2 class="contacts-title">Trusted contacts</h2>
+                </div>
+                <span class="contact-count">2 people</span>
+            </div>
+
+            <div class="contact-row">
+                <span class="contact-avatar">M</span>
+                <span class="contact-name">Mom</span>
+                <span class="contact-method">SMS text</span>
+            </div>
+
+            <div class="contact-row">
+                <span class="contact-avatar avatar-blue">D</span>
+                <span class="contact-name">Dad</span>
+                <span class="contact-method">Email</span>
+            </div>
+        </div>
+
+        <p class="footer-note"><span aria-hidden="true">&#9679;</span> Private, encrypted, and always in your control.</p>
+    </main>
+
+    <script>
+        const safeButton = document.querySelector('#safeBtn');
+        const actionMessage = document.querySelector('#actionMessage');
+
+        safeButton.addEventListener('click', async () => {
+            safeButton.disabled = true;
+            actionMessage.className = 'action-message is-sending';
+            actionMessage.textContent = 'Sending your safe message...';
+
+            try {
+                const response = await fetch('{{ url_for("send_check_in") }}', {
+                    method: 'POST',
+                    headers: { 'Accept': 'application/json' }
+                });
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || 'The message could not be sent.');
+                }
+
+                actionMessage.className = 'action-message is-success';
+                actionMessage.textContent = result.message;
+                safeButton.innerHTML = '<span class="check-icon" aria-hidden="true">&#10003;</span> Safe message sent';
+            } catch (error) {
+                actionMessage.className = 'action-message is-error';
+                actionMessage.textContent = error.message;
+                safeButton.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
