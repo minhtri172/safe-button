@@ -28,8 +28,8 @@
                 <p class="countdown-label">Next check-in window</p>
                 <span class="timer-state">Open</span>
             </div>
-            <div class="time-display" id="countdownTimer">23:59:59</div>
-            <div class="timer-bar" aria-hidden="true"><span></span></div>
+            <div class="time-display" id="countdownTimer" role="timer" aria-live="polite">24:00:00</div>
+            <div class="timer-bar" aria-hidden="true"><span id="timerProgress"></span></div>
             <p class="timer-caption">Your trusted contacts are notified only if this window closes.</p>
         </div>
 
@@ -65,6 +65,31 @@
     <script>
         const safeButton = document.querySelector('#safeBtn');
         const actionMessage = document.querySelector('#actionMessage');
+        const countdownTimer = document.querySelector('#countdownTimer');
+        const timerProgress = document.querySelector('#timerProgress');
+        const checkInWindowMs = 24 * 60 * 60 * 1000;
+        let checkInDeadline = new Date('{{ check_in_deadline }}').getTime();
+
+        function updateCountdown() {
+            const remainingMs = Math.max(0, checkInDeadline - Date.now());
+            const totalSeconds = Math.ceil(remainingMs / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            countdownTimer.textContent = [hours, minutes, seconds]
+                .map((unit) => String(unit).padStart(2, '0'))
+                .join(':');
+            timerProgress.style.width = `${Math.min(100, (remainingMs / checkInWindowMs) * 100)}%`;
+
+            if (remainingMs === 0) {
+                document.querySelector('.timer-state').textContent = 'Closed';
+                countdownTimer.setAttribute('aria-label', 'Check-in window closed');
+            }
+        }
+
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
 
         safeButton.addEventListener('click', async () => {
             safeButton.disabled = true;
@@ -82,6 +107,9 @@
                     throw new Error(result.error || 'The message could not be sent.');
                 }
 
+                checkInDeadline = new Date(result.check_in_deadline).getTime();
+                document.querySelector('.timer-state').textContent = 'Open';
+                updateCountdown();
                 actionMessage.className = 'action-message is-success';
                 actionMessage.textContent = result.message;
                 safeButton.innerHTML = '<span class="check-icon" aria-hidden="true">&#10003;</span> Safe message sent';
