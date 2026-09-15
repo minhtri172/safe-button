@@ -8,7 +8,7 @@ steps:
     args: ['push', 'us-east1-docker.pkg.dev/$PROJECT_ID/safe-button-repo/frontend-api:$COMMIT_SHA']
 
   # 3. Deploy that container image version straight into your active Cloud Run instance
-  - name: 'gcr.io/://google.com'
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
     args: [
       'run', 'deploy', 'safe-button-api',
