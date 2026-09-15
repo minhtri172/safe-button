@@ -3,6 +3,26 @@ from datetime import datetime, timedelta, timezone
 from flask import Flask, jsonify, render_template
 from google.cloud import firestore
 
+
+def format_current_date():
+    return datetime.now().strftime("%A, %B %-d")
+
+
+def format_last_check_in(value):
+    if value is None:
+        return "Never"
+
+    if hasattr(value, "to_pydatetime"):
+        value = value.to_pydatetime()
+
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+
+    now = datetime.now(timezone.utc)
+    label_day = "Today" if value.date() == now.date() else value.strftime("%A")
+    return f"{label_day} at {value.strftime('%I:%M %p').lstrip('0')}"
+
+
 app = Flask(__name__, static_folder="css", static_url_path="/css")
 
 # Initialize Firestore Client
@@ -27,10 +47,17 @@ def get_check_in_deadline():
 def dashboard():
     try:
         deadline = get_check_in_deadline()
+        last_check_in = db.collection("users").document("user_minh").get().to_dict().get("last_check_in")
     except Exception:
         deadline = datetime.now(timezone.utc) + CHECK_IN_WINDOW
+        last_check_in = None
 
-    return render_template("index.html", check_in_deadline=deadline.isoformat())
+    return render_template(
+        "index.html",
+        check_in_deadline=deadline.isoformat(),
+        current_date=format_current_date(),
+        last_check_in_label=format_last_check_in(last_check_in),
+    )
 
 @app.post("/api/check-in")
 def send_check_in():
@@ -50,7 +77,8 @@ def send_check_in():
         
         return jsonify(
             message="Safe-button pressed! Timers reset successfully.",
-            check_in_deadline=(check_in_time + CHECK_IN_WINDOW).isoformat()
+            check_in_deadline=(check_in_time + CHECK_IN_WINDOW).isoformat(),
+            last_check_in_label=format_last_check_in(check_in_time),
         )
         
     except Exception as e:

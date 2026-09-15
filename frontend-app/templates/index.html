@@ -18,7 +18,7 @@
         </div>
 
         <section class="intro-section" aria-labelledby="page-title">
-            <p class="date-line">Wednesday, September 12</p>
+            <p class="date-line">{{ current_date }}</p>
             <h1 id="page-title">A quick moment<br><em>to check in.</em></h1>
             <p class="intro-copy">Let your people know you are safe before the next check-in window closes.</p>
         </section>
@@ -35,7 +35,7 @@
 
         <button class="safe-button" id="safeBtn" type="button"><span class="check-icon" aria-hidden="true">&#10003;</span> I am safe</button>
         <p class="action-message" id="actionMessage" role="status" aria-live="polite"></p>
-        <p class="last-click-text">Last check-in: Today at 8:00 AM</p>
+        <p class="last-click-text" id="lastCheckInText">Last check-in: {{ last_check_in_label }}</p>
 
         <div class="contacts-panel">
             <div class="contacts-heading">
@@ -67,6 +67,7 @@
         const actionMessage = document.querySelector('#actionMessage');
         const countdownTimer = document.querySelector('#countdownTimer');
         const timerProgress = document.querySelector('#timerProgress');
+        const lastCheckInText = document.querySelector('#lastCheckInText');
         const checkInWindowMs = 24 * 60 * 60 * 1000;
         let checkInDeadline = new Date('{{ check_in_deadline }}').getTime();
 
@@ -108,6 +109,7 @@
                 }
 
                 checkInDeadline = new Date(result.check_in_deadline).getTime();
+                lastCheckInText.textContent = `Last check-in: ${result.last_check_in_label}`;
                 document.querySelector('.timer-state').textContent = 'Open';
                 updateCountdown();
                 actionMessage.className = 'action-message is-success';
