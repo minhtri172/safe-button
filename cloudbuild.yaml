@@ -1,0 +1,24 @@
+steps:
+  # 1. Compile your application folder into a Docker image container
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'us-east1-docker.pkg.dev/$PROJECT_ID/safe-button-repo/frontend-api:$COMMIT_SHA', './frontend-app']
+
+  # 2. Push the newly created image into your Artifact Registry repository
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-east1-docker.pkg.dev/$PROJECT_ID/safe-button-repo/frontend-api:$COMMIT_SHA']
+
+  # 3. Deploy that container image version straight into your active Cloud Run instance
+  - name: 'gcr.io/://google.com'
+    entrypoint: 'gcloud'
+    args: [
+      'run', 'deploy', 'safe-button-api',
+      '--image', 'us-east1-docker.pkg.dev/$PROJECT_ID/safe-button-repo/frontend-api:$COMMIT_SHA',
+      '--region', 'us-east1',
+      '--allow-unauthenticated'
+    ]
+
+images:
+  - 'us-east1-docker.pkg.dev/$PROJECT_ID/safe-button-repo/frontend-api:$COMMIT_SHA'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
