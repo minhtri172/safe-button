@@ -16,6 +16,29 @@ SMTP_PORT = int(os.environ.get("SMTP_PORT", 587))
 SMTP_USERNAME = os.environ.get("SMTP_USERNAME")
 SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD")
 SMTP_FROM = os.environ.get("SMTP_FROM", SMTP_USERNAME)
+CHECK_IN_WINDOW_HOURS = 24
+
+
+def check_in_view_data(last_check_in=None):
+    """Build the timestamps and labels used by the dashboard."""
+    now = datetime.now(timezone.utc)
+    if last_check_in is not None and last_check_in.tzinfo is None:
+        last_check_in = last_check_in.replace(tzinfo=timezone.utc)
+
+    window_start = last_check_in or now
+    deadline = window_start.timestamp() + (CHECK_IN_WINDOW_HOURS * 60 * 60)
+    deadline = datetime.fromtimestamp(deadline, timezone.utc)
+
+    return {
+        "current_date": now.strftime("%A, %B %d, %Y").replace(" 0", " "),
+        "last_check_in_label": (
+            last_check_in.astimezone().strftime("%b %d, %Y at %I:%M %p")
+            .replace(" 0", " ")
+            if last_check_in
+            else "Not yet"
+        ),
+        "check_in_deadline": deadline.isoformat(),
+    }
 
 def send_alert_email(to_email, subject, body_text):
     """Securely handles SMTP email dispatch loops."""
@@ -40,7 +63,9 @@ def send_alert_email(to_email, subject, body_text):
 
 @app.get("/")
 def dashboard():
-    return render_template("index.html")
+    user_doc = db.collection("users").document("user_minh").get()
+    user_data = user_doc.to_dict() if user_doc.exists else {}
+    return render_template("index.html", **check_in_view_data(user_data.get("last_check_in")))
 
 @app.post("/api/check-in")
 def send_check_in():
@@ -53,7 +78,12 @@ def send_check_in():
             "reminder_sent": False,
             "alert_sent": False
         })
-        return jsonify(message="Safe-button pressed! Timers reset successfully.")
+        user_data = user_ref.get().to_dict() or {}
+        view_data = check_in_view_data(user_data.get("last_check_in"))
+        return jsonify(
+            message="Safe-button pressed! Timers reset successfully.",
+            **view_data,
+        )
     except Exception as e:
         return jsonify(
             error="Could not register check-in. Database connection issue.",
