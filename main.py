@@ -11,7 +11,7 @@ app = Flask(__name__, static_folder="css", static_url_path="/css")
 db = firestore.Client()
 
 # Core SMTP Email Configurations (Reads from Environment Variables)
-SMTP_HOST = os.environ.get("SMTP_HOST", "://gmail.com")
+SMTP_HOST = os.environ.get("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT = int(os.environ.get("SMTP_PORT", 587))
 SMTP_USERNAME = os.environ.get("SMTP_USERNAME")
 SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD")
@@ -119,6 +119,8 @@ def background_timer_check():
         # Extract timing thresholds and contacts maps securely from database
         settings = user_data.get("settings", {})
         contacts = user_data.get("contacts", {})
+        print(f"Settings retrieved: {settings}")
+        print(f"Contacts retrieved: {contacts}")
         
         reminder_buffer = settings.get("reminder_buffer_hours", 24)
         alert_buffer = settings.get("alert_buffer_hours", 28)
