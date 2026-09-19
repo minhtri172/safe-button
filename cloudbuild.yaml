@@ -1,24 +1,18 @@
 steps:
-  # 1. Compile your application folder into a Docker image container
+  # 1. Run unit tests
+  - name: 'python:3.11-slim'
+    entrypoint: 'bash'
+    args: ['-c', 'pip install -r requirements.txt pytest && pytest']
+
+  # 2. Build image
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'us-east1-docker.pkg.dev/$PROJECT_ID/safe-button-repo/frontend-api:$COMMIT_SHA', '.']
 
-  # 2. Push the newly created image into your Artifact Registry repository
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'us-east1-docker.pkg.dev/$PROJECT_ID/safe-button-repo/frontend-api:$COMMIT_SHA']
-
-  # 3. Deploy that container image version straight into your active Cloud Run instance
+  # 3. Deploy straight to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
-    args: [
-      'run', 'deploy', 'safe-button-api',
-      '--image', 'us-east1-docker.pkg.dev/$PROJECT_ID/safe-button-repo/frontend-api:$COMMIT_SHA',
-      '--region', 'us-east1',
-      '--allow-unauthenticated'
-    ]
+    args: ['run', 'deploy', 'safe-button-api', '--image', 'us-east1-docker.pkg.dev/$PROJECT_ID/safe-button-repo/frontend-api:$COMMIT_SHA', '--region', 'us-east1', '--allow-unauthenticated']
 
+# Cloud Build handles the push to Artifact Registry automatically right here!
 images:
   - 'us-east1-docker.pkg.dev/$PROJECT_ID/safe-button-repo/frontend-api:$COMMIT_SHA'
-
-options:
-  logging: CLOUD_LOGGING_ONLY
