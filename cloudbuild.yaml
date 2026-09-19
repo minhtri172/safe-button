@@ -4,18 +4,26 @@ steps:
     entrypoint: 'bash'
     args: ['-c', 'pip install -r requirements.txt pytest && pytest']
 
-  # 2. Build Docker Image
+  # 2. Compile your application using the files directly in the root directory
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'us-east1-docker.pkg.dev/$PROJECT_ID/safe-button-repo/frontend-api:$COMMIT_SHA', '.']
 
-  # 3. Deploy to Cloud Run
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  # 3. Push the newly created image into your Artifact Registry repository
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-east1-docker.pkg.dev/$PROJECT_ID/safe-button-repo/frontend-api:$COMMIT_SHA']
+
+  # 4. Deploy that container image version straight into your active Cloud Run instance
+  - name: 'gcr.io/://google.com'
     entrypoint: 'gcloud'
-    args: ['run', 'deploy', 'safe-button-api', '--image', 'us-east1-docker.pkg.dev/$PROJECT_ID/safe-button-repo/frontend-api:$COMMIT_SHA', '--region', 'us-east1', '--allow-unauthenticated']
+    args: [
+      'run', 'deploy', 'safe-button-api',
+      '--image', 'us-east1-docker.pkg.dev/$PROJECT_ID/safe-button-repo/frontend-api:$COMMIT_SHA',
+      '--region', 'us-east1',
+      '--allow-unauthenticated'
+    ]
 
 images:
   - 'us-east1-docker.pkg.dev/$PROJECT_ID/safe-button-repo/frontend-api:$COMMIT_SHA'
 
-# FIX: Explicitly set logging option for custom service accounts
 options:
   logging: CLOUD_LOGGING_ONLY
