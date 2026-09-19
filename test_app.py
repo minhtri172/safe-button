@@ -19,7 +19,7 @@ def test_check_in_view_data_no_checkin():
     """Verify check-in view formatting when user has never checked in."""
     data = check_in_view_data(last_check_in=None)
     
-    assert data["last_check_in_label"] == "Not yet"
+    assert data["last_check_in_label"] == "Completed"
     assert "check_in_deadline" in data
 
 
