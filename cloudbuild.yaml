@@ -1,10 +1,10 @@
 steps:
-  # 1. Run pytest unit tests
+  # 1 Run pytest unit tests
   - name: 'python:3.11-slim'
     entrypoint: 'bash'
     args: ['-c', 'pip install -r requirements.txt pytest && pytest']
 
-  # 2. Compile your application using the files directly in the root directory
+  # 2. Compile your application folder into a Docker image container
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'us-east1-docker.pkg.dev/$PROJECT_ID/safe-button-repo/frontend-api:$COMMIT_SHA', '.']
 
@@ -13,7 +13,7 @@ steps:
     args: ['push', 'us-east1-docker.pkg.dev/$PROJECT_ID/safe-button-repo/frontend-api:$COMMIT_SHA']
 
   # 4. Deploy that container image version straight into your active Cloud Run instance
-  - name: 'gcr.io/://google.com'
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
     args: [
       'run', 'deploy', 'safe-button-api',
