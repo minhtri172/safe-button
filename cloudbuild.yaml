@@ -1,18 +1,21 @@
 steps:
-  # 1. Run unit tests
+  # 1. Run pytest unit tests
   - name: 'python:3.11-slim'
     entrypoint: 'bash'
     args: ['-c', 'pip install -r requirements.txt pytest && pytest']
 
-  # 2. Build image
+  # 2. Build Docker Image
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'us-east1-docker.pkg.dev/$PROJECT_ID/safe-button-repo/frontend-api:$COMMIT_SHA', '.']
 
-  # 3. Deploy straight to Cloud Run
+  # 3. Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: 'gcloud'
     args: ['run', 'deploy', 'safe-button-api', '--image', 'us-east1-docker.pkg.dev/$PROJECT_ID/safe-button-repo/frontend-api:$COMMIT_SHA', '--region', 'us-east1', '--allow-unauthenticated']
 
-# Cloud Build handles the push to Artifact Registry automatically right here!
 images:
   - 'us-east1-docker.pkg.dev/$PROJECT_ID/safe-button-repo/frontend-api:$COMMIT_SHA'
+
+# FIX: Explicitly set logging option for custom service accounts
+options:
+  logging: CLOUD_LOGGING_ONLY
