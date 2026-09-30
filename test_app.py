@@ -1,6 +1,11 @@
 import pytest
 from datetime import datetime, timezone
-import main
+from unittest.mock import patch
+
+with patch("boto3.client") as boto_client:
+    boto_client.return_value.get_parameters.return_value = {"Parameters": []}
+    import main
+
 from main import app, check_in_view_data
 
 
