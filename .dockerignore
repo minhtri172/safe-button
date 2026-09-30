@@ -5,4 +5,4 @@
 .pytest_cache
 .env
 .aws-sam
-aws/credentials
+aws/

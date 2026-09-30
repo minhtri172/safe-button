@@ -9,12 +9,23 @@ phases:
   pre_build:
     commands:
       - pytest -q
-      - AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-      - ECR_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${ECR_REPOSITORY_NAME}
-      - aws ecr get-login-password --region "$AWS_DEFAULT_REGION" | docker login --username AWS --password-stdin "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
+      - test -n "$AWS_DEFAULT_REGION"
+      - test -n "$ECR_REPOSITORY_NAME"
+      - AWS_ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
+      - ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
+      - IMAGE_TAG="$(printf '%s' "${CODEBUILD_RESOLVED_SOURCE_VERSION:-$CODEBUILD_BUILD_NUMBER}" | cut -c1-12)"
+      - IMAGE_URI="${ECR_REGISTRY}/${ECR_REPOSITORY_NAME}:${IMAGE_TAG}"
+      - aws ecr get-login-password --region "$AWS_DEFAULT_REGION" | docker login --username AWS --password-stdin "$ECR_REGISTRY"
   build:
     commands:
-      - docker build -t "${ECR_URI}:latest" .
+      - docker build -t "$IMAGE_URI" .
   post_build:
     commands:
-      - docker push "${ECR_URI}:latest"
+      - docker push "$IMAGE_URI"
+      - sed "s|IMAGE_URI|${IMAGE_URI}|g" k8s-deployment.yaml > rendered-k8s-deployment.yaml
+      - printf 'IMAGE_URI=%s\n' "$IMAGE_URI" > image-detail.txt
+
+artifacts:
+  files:
+    - rendered-k8s-deployment.yaml
+    - image-detail.txt
