@@ -86,6 +86,7 @@ body::after {
     display: grid;
     gap: 2px;
     flex: 1;
+    min-width: 0;
 }
 
 .eyebrow,
@@ -100,6 +101,9 @@ body::after {
 .status-title {
     font-size: 0.82rem;
     font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .status-badge {
@@ -119,6 +123,33 @@ body::after {
     height: 6px;
     background: var(--green);
     border-radius: 50%;
+}
+
+.login-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 0 12px;
+    border: 1px solid var(--green);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--green-dark);
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.login-button:hover {
+    background: var(--mint);
+}
+
+.login-button:focus-visible {
+    outline: 3px solid rgba(29, 122, 85, 0.24);
+    outline-offset: 2px;
 }
 
 .intro-section {
@@ -254,6 +285,14 @@ h1 em {
     box-shadow: none;
 }
 
+.login-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+    text-decoration: none;
+}
+
 .action-message {
     min-height: 18px;
     font-size: 0.72rem;
@@ -353,6 +392,83 @@ h1 em {
     color: var(--green);
     font-size: 0.55rem;
     vertical-align: 1px;
+}
+
+.contacts-card {
+    max-width: 560px;
+}
+
+.contacts-form {
+    display: grid;
+    gap: 20px;
+}
+
+.form-field {
+    display: grid;
+    gap: 7px;
+}
+
+.form-field label {
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.form-field input {
+    width: 100%;
+    min-height: 48px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 0 13px;
+    color: var(--ink);
+    background: #fff;
+    font: inherit;
+}
+
+.form-field input:focus {
+    outline: 3px solid rgba(29, 122, 85, 0.18);
+    border-color: var(--green);
+}
+
+.field-hint {
+    color: var(--muted);
+    font-size: 0.72rem;
+    line-height: 1.4;
+}
+
+.form-notice {
+    margin-bottom: 16px;
+    padding: 11px 13px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+}
+
+.form-notice.is-success {
+    color: var(--green-dark);
+    background: var(--mint);
+}
+
+.form-notice.is-error {
+    color: #8e3f35;
+    background: #f8e5df;
+}
+
+.back-link,
+.contacts-link {
+    display: block;
+    color: var(--green-dark);
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+}
+
+.back-link {
+    margin-top: 20px;
+}
+
+.contacts-link:hover,
+.back-link:hover {
+    text-decoration: underline;
 }
 
 @media (max-width: 480px) {

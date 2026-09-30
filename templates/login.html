@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In | Daily Check-In</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <main class="dashboard-card login-card">
+        <div class="status-header">
+            <div class="brand-mark" aria-hidden="true">DC</div>
+            <div class="status-copy">
+                <span class="eyebrow">Daily check-in</span>
+                <span class="status-title">Your safety dashboard</span>
+            </div>
+        </div>
+
+        <section class="intro-section" aria-labelledby="page-title">
+            <p class="date-line">A moment for peace of mind</p>
+            <h1 id="page-title">Check in,<br><em>stay connected.</em></h1>
+            <p class="intro-copy">Sign in to manage your check-ins and trusted email contacts.</p>
+        </section>
+
+        <a class="safe-button login-action" href="{{ url_for('login') }}">Sign in with Amazon Cognito</a>
+        <p class="footer-note"><span aria-hidden="true">&#9679;</span> Private, encrypted, and always in your control.</p>
+    </main>
+</body>
+</html>

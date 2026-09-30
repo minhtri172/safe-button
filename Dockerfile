@@ -1,7 +1,7 @@
 # Use the official lightweight Python image
 FROM python:3.11-slim
 
-# Allow statements and log messages to immediately appear in Cloud Logging
+# Send application logs directly to the container runtime.
 ENV PYTHONUNBUFFERED=True
 
 # Copy local code to the container image

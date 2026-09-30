@@ -12,9 +12,10 @@
             <div class="brand-mark" aria-hidden="true">DC</div>
             <div class="status-copy">
                 <span class="eyebrow">Daily check-in</span>
-                <span class="status-title">You are protected</span>
+                <span class="status-title">{{ user_email }}</span>
             </div>
             <span class="status-badge" id="statusBadge"><span class="status-dot"></span>Active</span>
+            <a class="login-button" href="{{ url_for('logout') }}">Sign out</a>
         </div>
 
         <section class="intro-section" aria-labelledby="page-title">
@@ -37,6 +38,7 @@
         <p class="action-message" id="actionMessage" role="status" aria-live="polite"></p>
         <p class="last-click-text" id="lastCheckInText">Last check-in: {{ last_check_in_label }}</p>
 
+        <a class="contacts-link" href="{{ url_for('manage_contacts') }}">Manage email contacts</a>
         <p class="footer-note"><span aria-hidden="true">&#9679;</span> Private, encrypted, and always in your control.</p>
     </main>
 

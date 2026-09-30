@@ -2,4 +2,16 @@ __pycache__/
 *.py[cod]
 .venv/
 .env
-gcp-key*
+.env.*
+!.env.example
+aws/config
+aws/credentials
+.pytest_cache/
+.coverage
+coverage.xml
+*.log
+*.pem
+*.key
+*.p12
+*.pfx
+*accessKeys*.csv
