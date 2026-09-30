@@ -13,5 +13,5 @@ phases:
       - aws eks update-kubeconfig --name "$EKS_CLUSTER_NAME" --region "$AWS_DEFAULT_REGION"
   build:
     commands:
-      - kubectl apply -f rendered-k8s-deployment.yaml
-      - kubectl rollout status deployment/safe-button --namespace safe-button --timeout=180s
+      - kubectl apply --namespace "${K8S_NAMESPACE:-default}" -f rendered-k8s-deployment.yaml
+      - kubectl rollout status deployment/safe-button --namespace "${K8S_NAMESPACE:-default}" --timeout=180s

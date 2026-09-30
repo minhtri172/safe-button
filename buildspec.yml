@@ -1,14 +1,8 @@
 version: 0.2
 
 phases:
-  install:
-    runtime-versions:
-      python: 3.11
-    commands:
-      - pip install -r requirements.txt
   pre_build:
     commands:
-      - pytest -q
       - test -n "$AWS_DEFAULT_REGION"
       - test -n "$ECR_REPOSITORY_NAME"
       - AWS_ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"

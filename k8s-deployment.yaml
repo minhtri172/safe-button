@@ -17,7 +17,7 @@ spec:
       serviceAccountName: my-pod-service-account
       containers:
         - name: safe-button
-          image: 119997536442.dkr.ecr.us-east-1.amazonaws.com/safe-button
+          image: IMAGE_URI
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
