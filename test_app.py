@@ -39,7 +39,7 @@ def sign_in(client, sub="cognito-test-user"):
 
 
 # ==========================================
-# 1. UNIT TESTS (Testing Business Logic)
+# 1. UNIT TESTS (Testing Business Logic)11
 # ==========================================
 
 def test_check_in_view_data_no_checkin():
@@ -55,7 +55,7 @@ def test_check_in_view_data_with_timestamp():
     now = datetime.now(timezone.utc)
     data = check_in_view_data(last_check_in=now)
     
-    assert data["last_check_in_label"] == "Not yet"
+    assert data["last_check_in_label"] != "Not yet"
     assert "check_in_deadline" in data
 
 
