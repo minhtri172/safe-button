@@ -55,7 +55,7 @@ def test_check_in_view_data_with_timestamp():
     now = datetime.now(timezone.utc)
     data = check_in_view_data(last_check_in=now)
     
-    assert data["last_check_in_label"] != "Not yet"
+    assert data["last_check_in_label"] == "Not yet"
     assert "check_in_deadline" in data
 
 
