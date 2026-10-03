@@ -17,8 +17,13 @@ spec:
       serviceAccountName: my-pod-service-account
       containers:
         - name: safe-button
-          image: IMAGE_URI
+          image: 119997536442.dkr.ecr.us-east-1.amazonaws.com/safe-button
           imagePullPolicy: IfNotPresent
+          env:
+            - name: COGNITO_CALLBACK_URL
+              value: https://okcfisher.click/auth/callback
+            - name: SESSION_COOKIE_SECURE
+              value: "true"
           ports:
             - name: http
               containerPort: 8080
