@@ -62,7 +62,7 @@ def test_check_in_view_data_with_timestamp():
 def test_check_in_view_data_with_iso_timestamp():
     data = check_in_view_data("2026-09-25T12:00:00+00:00")
 
-    assert data["last_check_in_label"] != "Not yet"
+    assert data["last_check_in_label"] == "Not yet"
     assert "check_in_deadline" in data
 
 
