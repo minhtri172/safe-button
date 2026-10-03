@@ -66,6 +66,10 @@ def test_check_in_view_data_with_iso_timestamp():
     assert "check_in_deadline" in data
 
 
+def test_temporary_failure_probe():
+    pytest.fail("Intentional temporary failure probe")
+
+
 # ==========================================
 # 2. INTEGRATION TESTS (Testing Endpoints)
 # ==========================================
