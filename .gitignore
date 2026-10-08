@@ -15,3 +15,9 @@ coverage.xml
 *.p12
 *.pfx
 *accessKeys*.csv
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+terraform/terraform.tfvars
+terraform/terraform.tfvars.json

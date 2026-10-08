@@ -41,6 +41,8 @@ For local development, use `http://localhost:8080/auth/callback` for `COGNITO_CA
 
 ## EKS deployment with CodePipeline
 
+The EKS Auto Mode cluster and its access configuration can be managed with the Terraform project in [`terraform/`](./terraform/README.md). It reuses the existing IAM roles and VPC subnets; the CodePipeline continues to deploy the Kubernetes workload.
+
 Use three pipeline stages after Source: Test, Build, then Deploy. The Test CodeBuild action uses `buildspec-test.yml` to install Python dependencies and run `pytest -q`; it needs no AWS access to application secrets. The Build CodeBuild action uses `buildspec.yml` to build and push a commit-tagged image, render that image into `rendered-k8s-deployment.yaml`, and publish the rendered manifest as its output artifact. Configure Docker privileged mode, `AWS_DEFAULT_REGION`, and `ECR_REPOSITORY_NAME` on the Build project. Its role needs ECR login and image-push permissions for the repository plus CloudWatch Logs permissions.
 
 For a CodeBuild-based Deploy action, use `buildspec-deploy.yml` and pass it the Build artifact. Set `EKS_CLUSTER_NAME`, `AWS_DEFAULT_REGION`, and optionally `K8S_NAMESPACE` (defaults to `default`). The deploy role needs `eks:DescribeCluster` and an EKS access entry mapped to the Kubernetes group with permissions to update the workload. If you keep the native EKS `kubectl` action instead, it does not run a buildspec: give it the Build artifact and set its manifest path to `rendered-k8s-deployment.yaml`.
