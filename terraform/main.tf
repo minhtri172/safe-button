@@ -72,6 +72,8 @@ resource "kubernetes_secret_v1" "safe-button-cron" {
   }
 
   type = "Opaque"
+
+  depends_on = [module.eks]
 }
 
 # 1. Generate a 32-byte (64 hex characters) random string equivalent to `openssl rand -hex 32`
@@ -91,6 +93,8 @@ resource "kubernetes_secret_v1" "safe_button_flask" {
   }
 
   type = "Opaque"
+
+  depends_on = [module.eks]
 }
 
 resource "aws_eks_pod_identity_association" "app" {
