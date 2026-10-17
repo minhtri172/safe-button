@@ -59,7 +59,12 @@ TFVARS
 aws kms delete-alias --region "${AWS_REGION}" --alias-name "alias/eks/${CLUSTER_NAME}" || true
 aws logs delete-log-group --region "${AWS_REGION}" --log-group-name "/aws/eks/${CLUSTER_NAME}/cluster" || true
 terraform init
-terraform apply -auto-approve -var-file=terraform.tfvars
+# Retry: new access entries can take a short while to take effect
+for i in 1 2 3 4 5; do
+  terraform apply -auto-approve -var-file=terraform.tfvars && break
+  [ "\$i" -eq 5 ] && exit 1
+  sleep 30
+done
 
 cd ..
 aws eks update-kubeconfig --region "${AWS_REGION}" --name "${CLUSTER_NAME}"
@@ -85,23 +90,3 @@ aws route53 change-resource-record-sets --hosted-zone-id "$ZONE_ID" --change-bat
     \"AliasTarget\":{\"HostedZoneId\":\"$LB_ZONE\",\"DNSName\":\"$LB_DNS\",\"EvaluateTargetHealth\":false}}}]}"
 EOF
 
-# Destroy Terraform resources when the instance is stopped/terminated
-cat > /etc/systemd/system/tf-destroy.service <<UNIT
-[Unit]
-Description=Terraform destroy on shutdown
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-Type=oneshot
-RemainAfterExit=yes
-ExecStart=/bin/true
-ExecStop=-/bin/bash -c 'sudo -u ${RUN_AS} -H kubectl delete svc safe-button --timeout=10m'
-ExecStop=/bin/bash -c 'cd ${HOME_DIR}/safe-button/terraform && sudo -u ${RUN_AS} -H /usr/local/bin/terraform destroy -auto-approve -var-file=terraform.tfvars'
-TimeoutStopSec=1800
-
-[Install]
-WantedBy=multi-user.target
-UNIT
-systemctl daemon-reload
-systemctl enable --now tf-destroy.service
