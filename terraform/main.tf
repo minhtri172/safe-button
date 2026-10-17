@@ -8,6 +8,18 @@ module "eks" {
   # Optional
   endpoint_public_access = true
 
+  # EC2 runner in the same VPC resolves the API endpoint to the private ENI; allow it in.
+  security_group_additional_rules = {
+    vpc_api_access = {
+      description = "Kubernetes API from the VPC"
+      protocol    = "tcp"
+      from_port   = 443
+      to_port     = 443
+      type        = "ingress"
+      cidr_blocks = ["172.31.0.0/16"]
+    }
+  }
+
   # The caller is already listed in var.admin_principal_arns; enabling this would create a duplicate access entry.
   enable_cluster_creator_admin_permissions = false
 
