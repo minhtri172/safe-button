@@ -52,6 +52,7 @@ subnet_ids = [
 admin_principal_arns = [
   "arn:aws:iam::119997536442:user/minhle",
   "arn:aws:iam::119997536442:role/safe-button-deploy-role",
+  "arn:aws:iam::119997536442:role/safe-button-terraform-runner",
 ]
 TFVARS
 # Remove leftovers from a previous cluster (fresh instance has empty local state)
