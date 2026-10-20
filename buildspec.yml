@@ -7,19 +7,21 @@ phases:
       - test -n "$ECR_REPOSITORY_NAME"
       - AWS_ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
       - ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
-      - IMAGE_TAG="$(printf '%s' "${CODEBUILD_RESOLVED_SOURCE_VERSION:-$CODEBUILD_BUILD_NUMBER}" | cut -c1-12)"
+
+      # Create Tags for the image
+      - IMAGE_TAG="$(printf '%s' "${CODEBUILD_RESOLVED_SOURCE_VERSION:-$CODEBUILD_BUILD_NUMBER}" | cut -c1-12)" 
       - IMAGE_URI="${ECR_REGISTRY}/${ECR_REPOSITORY_NAME}:${IMAGE_TAG}"
+
+      # Log in to ECR
       - aws ecr get-login-password --region "$AWS_DEFAULT_REGION" | docker login --username AWS --password-stdin "$ECR_REGISTRY"
   build:
     commands:
-      - docker build -t "$IMAGE_URI" .
+      - docker build -t "$IMAGE_URI" . # build the docker image with the previously defined IMAGE_URI
   post_build:
     commands:
-      - docker push "$IMAGE_URI"
-      - sed "s|IMAGE_URI|${IMAGE_URI}|g" k8s-deployment.yaml > rendered-k8s-deployment.yaml
-      - printf 'IMAGE_URI=%s\n' "$IMAGE_URI" > image-detail.txt
+      - docker push "$IMAGE_URI" # push the docker image to ECR
+      - sed "s|IMAGE_URI|${IMAGE_URI}|g" k8s-deployment.yaml > rendered-k8s-deployment.yaml # replace IMAGE_URI in k8s deployment file
 
-artifacts:
+artifacts: # files in the build artifact
   files:
-    - rendered-k8s-deployment.yaml
-    - image-detail.txt
+    - rendered-k8s-deployment.yaml # contains the correct image URI for EKS the deployment
