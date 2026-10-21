@@ -56,7 +56,7 @@ module "eks" {
 
 # 1. Fetch the SSM parameter value
 data "aws_ssm_parameter" "cron_auth_token" {
-  name            = "/safe-button/cron-auth-token"
+  name            = "auth-token"
   with_decryption = true
 }
 
