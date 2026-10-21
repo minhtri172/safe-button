@@ -59,7 +59,7 @@ oauth.register(
   name='oidc',
   authority='https://cognito-idp.us-east-1.amazonaws.com/us-east-1_TLvRsA5Hf',
   client_id='138p7dqp9s0bu3eofc78oom7op',
-  client_secret=COGNITO_CLIENT_SECRET
+  client_secret=COGNITO_CLIENT_SECRET,
   server_metadata_url='https://cognito-idp.us-east-1.amazonaws.com/us-east-1_TLvRsA5Hf/.well-known/openid-configuration',
   client_kwargs={'scope': 'email openid phone'}
 )
