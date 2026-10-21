@@ -231,13 +231,11 @@ def send_check_in():
 
 @app.post("/api/cron-check")
 def background_timer_check():
-    """Endpoint triggered by cron job to evaluate user check-in status."""
-    """
     authorization = request.headers.get("Authorization", "")
     expected_authorization = f"Bearer {CRON_AUTH_TOKEN}"
     if not CRON_AUTH_TOKEN or not hmac.compare_digest(authorization, expected_authorization):
         return jsonify(error="Unauthorized invocation block."), 401
-    """
+    
 
     try:
         users = table.scan()['Items']
