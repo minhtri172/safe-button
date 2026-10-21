@@ -18,7 +18,7 @@ spec:
       containers:
         - name: safe-button
           image: 119997536442.dkr.ecr.us-east-1.amazonaws.com/safe-button:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           env:
             - name: SESSION_COOKIE_SECURE
               value: "true"

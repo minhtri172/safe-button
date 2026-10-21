@@ -4,6 +4,7 @@ import hmac
 import re
 from email.mime.text import MIMEText
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from flask import Flask, jsonify, redirect, render_template, request, session, url_for
 import boto3
 from authlib.integrations.flask_client import OAuth
@@ -88,7 +89,7 @@ def logout():
 
 def check_in_view_data(last_check_in=None):
     
-    now = datetime.now(timezone.utc).astimezone()
+    now = datetime.now(timezone.utc).astimezone(ZoneInfo("America/New_York"))
     
     if last_check_in is None:
         last_check_in = now
@@ -98,11 +99,11 @@ def check_in_view_data(last_check_in=None):
     window_start = last_check_in or now
     deadline = window_start.timestamp() + (CHECK_IN_WINDOW_HOURS * 60 * 60)
     deadline = datetime.fromtimestamp(deadline, timezone.utc)
-    deadline = deadline.astimezone()
+    deadline = deadline.astimezone(ZoneInfo("America/New_York"))
 
     return {
         "current_date": now.strftime("%A, %B %d, %Y"),
-        "last_check_in_label": last_check_in.astimezone().strftime("%Y-%m-%d %H:%M:%S"),
+        "last_check_in_label": last_check_in.astimezone(ZoneInfo("America/New_York")).strftime("%Y-%m-%d %H:%M:%S"),
         "check_in_deadline": deadline.isoformat(),
     }
 
@@ -147,6 +148,7 @@ def manage_contacts():
     user = session.get("user")
     if not user:
         return redirect(url_for("login"))
+    
     response = table.get_item(Key={"id": user["sub"]})
     user_data = response.get("Item", {})
     contacts = user_data.get("contacts", {})
@@ -186,7 +188,7 @@ def send_check_in():
         return jsonify(error="Sign in to check in."), 401
     try:
         # Get check-in timestamp
-        checked_in_at = datetime.now(timezone.utc).astimezone().isoformat()
+        checked_in_at = datetime.now(timezone.utc).astimezone(ZoneInfo("America/New_York")).isoformat()
         table = dynamodb.Table(DYNAMODB_TABLE_NAME)
         
         # update the user's check-in record in the database
@@ -252,7 +254,10 @@ def background_timer_check():
 
                     table.update_item(
                         Key={"id": user.get("id")},
-                        UpdateExpression="SET status = :status, alert_sent = :alert_sent",
+                        UpdateExpression="SET #status = :status, alert_sent = :alert_sent",
+                        ExpressionAttributeNames={
+                            "#status": "status"
+                        },
                         ExpressionAttributeValues={
                             ":status": "TRIGGERED",
                             ":alert_sent": True
@@ -272,7 +277,10 @@ def background_timer_check():
                     
                     table.update_item(
                         Key={"id": user.get("id")},
-                        UpdateExpression="SET status = :status, reminder_sent = :reminder_sent",
+                        UpdateExpression="SET #status = :status, reminder_sent = :reminder_sent",
+                        ExpressionAttributeNames={
+                            "#status": "status"
+                        },
                         ExpressionAttributeValues={
                             ":status": "REMINDER_SENT",
                             ":reminder_sent": True
