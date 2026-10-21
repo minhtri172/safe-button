@@ -152,34 +152,24 @@ def manage_contacts():
     response = table.get_item(Key={"id": user["sub"]})
     user_data = response.get("Item", {})
     contacts = user_data.get("contacts", {})
-    error = None
-
+   
     if request.method == "POST":
         my_email = request.form.get("my_email", "").strip()
-        family_email = request.form.get("family_email", "").strip()
-        email_pattern = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
-
-        if not all(
-            len(address) <= 254 and email_pattern.fullmatch(address)
-            for address in (my_email, family_email)
-        ):
-            error = "Enter a valid email address in both fields."
-        else:
-            contacts = {"my_email": my_email, "family_email": family_email}
-            table.update_item(
-                Key={"id": user["sub"]},
-                UpdateExpression="SET contacts = :contacts",
-                ExpressionAttributeValues={":contacts": contacts}
-            )
-            return redirect(url_for("dashboard"))
+        family_email = request.form.get("family_email", "").strip() 
+        contacts = {"my_email": my_email, "family_email": family_email}
+        table.update_item(
+            Key={"id": user["sub"]},
+            UpdateExpression="SET contacts = :contacts",
+            ExpressionAttributeValues={":contacts": contacts}
+        )
+        return redirect(url_for("dashboard"))
 
     return render_template(
         "contacts.html",
         my_email=contacts.get("my_email", ""),
         family_email=contacts.get("family_email", ""),
-        error=error,
-        saved=False,
-    ), 400 if error else 200
+        saved=True,
+    ), 200
 
 @app.post("/api/check-in")
 def send_check_in():
