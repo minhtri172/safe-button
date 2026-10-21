@@ -20,8 +20,6 @@ spec:
           image: IMAGE_URI
           imagePullPolicy: IfNotPresent
           env:
-            - name: COGNITO_CALLBACK_URL
-              value: https://okcfisher.click/auth/callback
             - name: SESSION_COOKIE_SECURE
               value: "true"
             - name: CRON_AUTH_TOKEN

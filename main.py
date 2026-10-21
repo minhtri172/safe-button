@@ -32,13 +32,12 @@ CRON_AUTH_TOKEN = os.environ.get("CRON_AUTH_TOKEN", "")
 def get_smtp_config():
     ssm = boto3.client('ssm', region_name='us-east-1')
     
-    # Request all three configurations by their names in a list
+    # Get values
     response = ssm.get_parameters(
         Names=['smtp-from', 'smtp-password', 'smtp-username', 'COGNITO_CLIENT_SECRET'],
-        WithDecryption=True  # Automatically decrypts the smtp-password SecureString
-    )
+        WithDecryption=True
     
-    # Map the results into a readable dictionary
+    # Map to a dict
     config = {param['Name']: param['Value'] for param in response['Parameters']}
     return config
 
@@ -52,24 +51,21 @@ SMTP_USERNAME = smtp_settings.get('smtp-username')
 SMTP_PASSWORD = smtp_settings.get('smtp-password')
 SMTP_FROM = smtp_settings.get('smtp-from')
 CHECK_IN_WINDOW_HOURS = 24
-COGNITO_CLIENT_SECRET = os.environ.get("COGNITO_CLIENT_SECRET") or smtp_settings.get("COGNITO_CLIENT_SECRET")
-COGNITO_REGION = os.environ.get("COGNITO_REGION", "us-east-1")
-COGNITO_USER_POOL_ID = os.environ.get("COGNITO_USER_POOL_ID", "us-east-1_TLvRsA5Hf")
-COGNITO_CLIENT_ID = os.environ.get("COGNITO_CLIENT_ID", "138p7dqp9s0bu3eofc78oom7op")
-COGNITO_ISSUER = f"https://cognito-idp.{COGNITO_REGION}.amazonaws.com/{COGNITO_USER_POOL_ID}"
+COGNITO_CLIENT_SECRET = smtp_settings.get("COGNITO_CLIENT_SECRET")
+
 
 oauth.register(
-    name="oidc",
-    client_id=COGNITO_CLIENT_ID,
-    client_secret=COGNITO_CLIENT_SECRET,
-    server_metadata_url=f"{COGNITO_ISSUER}/.well-known/openid-configuration",
-    client_kwargs={"scope": "openid email"},
+  name='oidc',
+  authority='https://cognito-idp.us-east-1.amazonaws.com/us-east-1_TLvRsA5Hf',
+  client_id='138p7dqp9s0bu3eofc78oom7op',
+  client_secret=COGNITO_CLIENT_SECRET
+  server_metadata_url='https://cognito-idp.us-east-1.amazonaws.com/us-east-1_TLvRsA5Hf/.well-known/openid-configuration',
+  client_kwargs={'scope': 'email openid phone'}
 )
 
 @app.get("/login")
 def login():
-    callback_url = os.environ.get("COGNITO_CALLBACK_URL") or url_for("authorize", _external=True)
-    return oauth.oidc.authorize_redirect(callback_url)
+    return oauth.oidc.authorize_redirect("https://okcfisher.click/auth/callback")
 
 @app.get("/auth/callback")
 def authorize():
@@ -87,11 +83,6 @@ def authorize():
 @app.get("/logout")
 def logout():
     session.clear()
-    cognito_domain = os.environ.get("COGNITO_DOMAIN", "").rstrip("/")
-    if cognito_domain:
-        logout_uri = os.environ.get("COGNITO_LOGOUT_URI") or url_for("dashboard", _external=True)
-        query = urlencode({"client_id": COGNITO_CLIENT_ID, "logout_uri": logout_uri})
-        return redirect(f"{cognito_domain}/logout?{query}")
     return redirect(url_for("dashboard"))
 
 def check_in_view_data(last_check_in=None):

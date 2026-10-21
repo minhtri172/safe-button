@@ -20,8 +20,6 @@ spec:
           image: 119997536442.dkr.ecr.us-east-1.amazonaws.com/safe-button:latest
           imagePullPolicy: IfNotPresent
           env:
-            - name: COGNITO_CALLBACK_URL
-              value: https://okcfisher.click/auth/callback
             - name: SESSION_COOKIE_SECURE
               value: "true"
             - name: CRON_AUTH_TOKEN
