@@ -1,7 +1,6 @@
-# Use the official lightweight Python image
 FROM python:3.11-slim
 
-# Send application logs directly to the container runtime.
+# Write logs directly to the container runtime
 ENV PYTHONUNBUFFERED=True
 
 # Copy local code to the container image
@@ -12,5 +11,5 @@ COPY . ./
 # Install production dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Run the web service on container startup using standard JSON arguments
-CMD ["gunicorn", "--bind", ":8080", "--workers", "1", "--threads", "8", "--timeout", "0", "main:app"]
+# Run the web service
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "main:app"]
