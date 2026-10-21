@@ -36,6 +36,7 @@ def get_smtp_config():
     response = ssm.get_parameters(
         Names=['smtp-from', 'smtp-password', 'smtp-username', 'COGNITO_CLIENT_SECRET'],
         WithDecryption=True
+    )
     
     # Map to a dict
     config = {param['Name']: param['Value'] for param in response['Parameters']}
