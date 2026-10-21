@@ -6,3 +6,11 @@
 .env
 .aws-sam
 aws/
+terraform/
+demo-assets/
+*.md
+*.ps1
+*.sh
+*.yml
+*.yaml
+test_app.py
