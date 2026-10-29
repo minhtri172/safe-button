@@ -13,7 +13,7 @@ from urllib.parse import urlencode
 
 app = Flask(__name__, static_folder="css", static_url_path="/css")
 
-app.secret_key = os.environ.get("FLASK_SECRET_KEY") or os.urandom(32)
+app.secret_key = os.urandom(32)
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_SECURE"] = os.environ.get("SESSION_COOKIE_SECURE", "false").lower() == "true"

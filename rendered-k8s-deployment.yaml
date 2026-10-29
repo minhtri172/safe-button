@@ -27,11 +27,6 @@ spec:
                 secretKeyRef:
                   name: safe-button-cron
                   key: CRON_AUTH_TOKEN
-            - name: FLASK_SECRET_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: safe-button-flask
-                  key: FLASK_SECRET_KEY
           ports:
             - name: http
               containerPort: 8080

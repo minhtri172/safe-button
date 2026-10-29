@@ -76,27 +76,6 @@ resource "kubernetes_secret_v1" "safe-button-cron" {
   depends_on = [module.eks]
 }
 
-# 1. Generate a 32-byte (64 hex characters) random string equivalent to `openssl rand -hex 32`
-resource "random_id" "flask_secret_key" {
-  byte_length = 32
-}
-
-# 2. Create the Kubernetes Secret (Terraform manages state, so it automatically skips if already present)
-resource "kubernetes_secret_v1" "safe_button_flask" {
-  metadata {
-    name      = "safe-button-flask"
-    namespace = "default" # Adjust namespace if needed
-  }
-
-  data = {
-    FLASK_SECRET_KEY = random_id.flask_secret_key.hex
-  }
-
-  type = "Opaque"
-
-  depends_on = [module.eks]
-}
-
 resource "aws_eks_pod_identity_association" "app" {
   cluster_name    = module.eks.cluster_name
   namespace       = var.pod_identity_namespace
