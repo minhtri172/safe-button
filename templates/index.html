@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Check-In Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
     <main class="dashboard-card">
         <div class="status-header">
@@ -21,7 +23,8 @@
         <section class="intro-section" aria-labelledby="page-title">
             <p class="date-line">{{ current_date }}</p>
             <h1 id="page-title">A quick moment<br><em>to check in.</em></h1>
-            <p class="intro-copy">Let your people know you are safe before the next check-in window closes. THIS IS A TEST!!!</p>
+            <p class="intro-copy">Let your people know you are safe before the next check-in window closes. THIS IS A
+                TEST!!!</p>
         </section>
 
         <div class="timer-section">
@@ -34,12 +37,26 @@
             <p class="timer-caption">Your trusted contacts are notified only if this window closes.</p>
         </div>
 
-        <button class="safe-button" id="safeBtn" type="button"><span class="check-icon" aria-hidden="true">&#10003;</span> I am safe</button>
+        <button class="safe-button" id="safeBtn" type="button"><span class="check-icon"
+                aria-hidden="true">&#10003;</span> I am safe</button>
         <p class="action-message" id="actionMessage" role="status" aria-live="polite"></p>
         <p class="last-click-text" id="lastCheckInText">Last check-in: {{ last_check_in_label }}</p>
 
+        <!-- Activity Log Panel -->
+        <section class="log-section" aria-label="Activity Log">
+            <div class="log-header">
+                <h2 class="log-title">
+                    <span aria-hidden="true">&#128221;</span> Activity Log
+                </h2>
+            </div>
+            <ul class="log-list" id="logList">
+                <li class="log-empty" id="emptyLogNotice">No activity recorded yet.</li>
+            </ul>
+        </section>
+
         <a class="contacts-link" href="{{ url_for('manage_contacts') }}">Manage email contacts</a>
-        <p class="footer-note"><span aria-hidden="true">&#9679;</span> Private, encrypted, and always in your control.</p>
+        <p class="footer-note"><span aria-hidden="true">&#9679;</span> Private, encrypted, and always in your control.
+        </p>
     </main>
 
     <script>
@@ -48,8 +65,31 @@
         const countdownTimer = document.querySelector('#countdownTimer');
         const timerProgress = document.querySelector('#timerProgress');
         const lastCheckInText = document.querySelector('#lastCheckInText');
+        const logList = document.querySelector('#logList');
+        const emptyLogNotice = document.querySelector('#emptyLogNotice');
+
         const checkInWindowMs = 24 * 60 * 60 * 1000;
         let checkInDeadline = new Date('{{ check_in_deadline }}').getTime();
+        let windowClosedLogged = false;
+
+        // Logging Utility Function
+        function addLog(message, type = 'info') {
+            if (emptyLogNotice) {
+                emptyLogNotice.style.display = 'none';
+            }
+
+            const li = document.createElement('li');
+            li.className = `log-item is-${type}`;
+
+            const textSpan = document.createElement('span');
+            textSpan.className = 'log-text';
+            textSpan.textContent = message;
+
+            li.appendChild(textSpan);
+
+            // Insert new log at the top
+            logList.insertBefore(li, logList.firstChild);
+        }
 
         function updateCountdown() {
             const remainingMs = Math.max(0, checkInDeadline - Date.now());
@@ -66,11 +106,40 @@
             if (remainingMs === 0) {
                 document.querySelector('.timer-state').textContent = 'Closed';
                 countdownTimer.setAttribute('aria-label', 'Check-in window closed');
+
+                if (!windowClosedLogged) {
+                    addLog('Check-in window has closed!', 'error');
+                    windowClosedLogged = true;
+                }
             }
         }
 
+        // log_data is safely injected directly from Flask when the page loads!
+        const initialLogs = {{ log_data | tojson | safe }};
+
+        // Sort logs by timestamp (oldest first)
+        initialLogs.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+        initialLogs.forEach(entry => {
+            // Parse the ISO timestamp into a JavaScript Date object
+            const dateObj = new Date(entry.timestamp);
+
+            // Format date components with leading zeros
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            const hours = String(dateObj.getHours()).padStart(2, '0');
+            const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+            const seconds = String(dateObj.getSeconds()).padStart(2, '0');
+
+            const formattedTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+            addLog(`${formattedTime}: ${entry.message}`, entry.type);
+        });
+
         updateCountdown();
         setInterval(updateCountdown, 1000);
+
 
         safeButton.addEventListener('click', async () => {
             safeButton.disabled = true;
@@ -89,18 +158,26 @@
                 }
 
                 checkInDeadline = new Date(result.check_in_deadline).getTime();
+                windowClosedLogged = false; // Reset warning state on successful check-in
+
                 lastCheckInText.textContent = `Last check-in: ${result.last_check_in_label}`;
                 document.querySelector('.timer-state').textContent = 'Open';
                 updateCountdown();
+
                 actionMessage.className = 'action-message is-success';
                 actionMessage.textContent = result.message;
                 safeButton.innerHTML = '<span class="check-icon" aria-hidden="true">&#10003;</span> Safe message sent';
+
+                addLog(`Check-in recorded successfully: ${result.message}`, 'success');
             } catch (error) {
                 actionMessage.className = 'action-message is-error';
                 actionMessage.textContent = error.message;
                 safeButton.disabled = false;
+
+                addLog(`Check-in failed: ${error.message}`, 'error');
             }
         });
     </script>
 </body>
+
 </html>

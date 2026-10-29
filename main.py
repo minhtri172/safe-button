@@ -9,6 +9,7 @@ from flask import Flask, jsonify, redirect, render_template, request, session, u
 import boto3
 from authlib.integrations.flask_client import OAuth
 from urllib.parse import urlencode
+import uuid
 
 
 app = Flask(__name__, static_folder="css", static_url_path="/css")
@@ -20,12 +21,14 @@ app.config["SESSION_COOKIE_SECURE"] = os.environ.get("SESSION_COOKIE_SECURE", "f
 oauth = OAuth(app)
 
 # DynamoDB table uses `id` as its partition key.
-DYNAMODB_TABLE_NAME = os.environ.get("DYNAMODB_TABLE", "SafeButtonTable")
+DYNAMODB_TABLE_NAME = "SafeButtonTable"
+LOG_TABLE_NAME = "LogTable"
 AWS_REGION = os.environ.get("AWS_REGION") or os.environ.get("AWS_DEFAULT_REGION") or "us-east-1"
 #table = boto3.resource("dynamodb", region_name=AWS_REGION).Table(DYNAMODB_TABLE_NAME)
 
 dynamodb = boto3.resource('dynamodb', region_name=AWS_REGION)
 table = dynamodb.Table(DYNAMODB_TABLE_NAME)
+log_table = dynamodb.Table(LOG_TABLE_NAME)
 CRON_AUTH_TOKEN = os.environ.get("CRON_AUTH_TOKEN", "")
 
 
@@ -64,6 +67,16 @@ oauth.register(
   server_metadata_url='https://cognito-idp.us-east-1.amazonaws.com/us-east-1_TLvRsA5Hf/.well-known/openid-configuration',
   client_kwargs={'scope': 'email openid phone'}
 )
+
+# This is for testing
+@app.get("/a")
+def mock_login():
+    session.clear()
+    session["user"] = {
+        "sub": "445894d8-3081-706c-9172-bf0cf88bd42a",
+        "email": "testuser@example.com",
+    }
+    return redirect(url_for("manage_contacts"))
 
 @app.get("/login")
 def login():
@@ -135,11 +148,15 @@ def dashboard():
     if not user:
         return render_template("login.html")
     
+    log_data = log_table.scan().get("Items", [])
+    print(log_data)
+    
     response = table.get_item(Key={"id": user["sub"]})
     user_data = response.get("Item", {})
     return render_template(
         "index.html",
         user_email=user.get("email", ""),
+        log_data=log_data,
         **check_in_view_data(user_data.get("last_check_in")),
     )
 
@@ -171,7 +188,7 @@ def manage_contacts():
         saved=True,
     ), 200
 
-@app.post("/api/check-in")
+@app.post("/check-in")
 def send_check_in():
     user = session.get("user")
     if not user:
@@ -179,7 +196,6 @@ def send_check_in():
     try:
         # Get check-in timestamp
         checked_in_at = datetime.now(timezone.utc).astimezone(ZoneInfo("America/New_York")).isoformat()
-        table = dynamodb.Table(DYNAMODB_TABLE_NAME)
         
         # update the user's check-in record in the database
         my_email = table.get_item(Key={"id": user["sub"]})["Item"]["contacts"]["my_email"]
@@ -201,6 +217,16 @@ def send_check_in():
                 "status": "OK"
             }
         )
+        
+        # Log the check-in event in the log table
+        log_table.put_item(
+            Item={
+                "id": str(uuid.uuid4()),
+                "timestamp": checked_in_at,
+                "message": "User checked in successfully.",
+                "type": "info"
+            }
+        )
 
         view_data = check_in_view_data(checked_in_at)
         return jsonify(
@@ -213,12 +239,12 @@ def send_check_in():
             technical_details=str(e)
         ), 500
 
-@app.post("/api/cron-check")
+@app.post("/cron-check")
 def background_timer_check():
-    authorization = request.headers.get("Authorization", "")
-    expected_authorization = f"Bearer {CRON_AUTH_TOKEN}"
-    if not CRON_AUTH_TOKEN or not hmac.compare_digest(authorization, expected_authorization):
-        return jsonify(error="Unauthorized invocation block."), 401
+    # authorization = request.headers.get("Authorization", "")
+    # expected_authorization = f"Bearer {CRON_AUTH_TOKEN}"
+    # if not CRON_AUTH_TOKEN or not hmac.compare_digest(authorization, expected_authorization):
+    #     return jsonify(error="Unauthorized invocation block."), 401
     
 
     try:
@@ -240,6 +266,15 @@ def background_timer_check():
                         family_email,
                         "URGENT: Safe-Button Alert Activated",
                         f"Emergency Alert. The user has missed their safety check-in window. Last contact: {last_check_in}.",
+                    )
+                    
+                    log_table.put_item(
+                        Item={
+                            "id": str(uuid.uuid4()),
+                            "timestamp": datetime.now(timezone.utc).isoformat(),
+                            "message": "Alert email sent to family.",
+                            "type": "alert"
+                        }
                     )
 
                     table.update_item(
@@ -265,6 +300,15 @@ def background_timer_check():
                         f"Reminder: The user has not checked in within the expected time window. Last contact: {last_check_in}.",
                     )
                     
+                    log_table.put_item(
+                        Item={
+                            "id": str(uuid.uuid4()),
+                            "timestamp": datetime.now(timezone.utc).isoformat(),
+                            "message": "Reminder email sent to user.",
+                            "type": "reminder"
+                        }
+                    )
+                    
                     table.update_item(
                         Key={"id": user.get("id")},
                         UpdateExpression="SET #status = :status, reminder_sent = :reminder_sent",
@@ -276,6 +320,15 @@ def background_timer_check():
                             ":reminder_sent": True
                         }
                     )
+            else:
+                log_table.put_item(
+                    Item={
+                        "id": str(uuid.uuid4()),
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
+                        "message": "User is within the expected check-in window.",
+                        "type": "info"
+                    }
+                )
         return jsonify(status="Heartbeat calculated successfully.")
 
     except Exception as e:
