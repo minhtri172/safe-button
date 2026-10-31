@@ -21,16 +21,6 @@ variable "kubernetes_version" {
   }
 }
 
-variable "cluster_role_arn" {
-  description = "ARN of the existing IAM role used by the EKS control plane."
-  type        = string
-}
-
-variable "node_role_arn" {
-  description = "ARN of the existing IAM role used by EKS Auto Mode nodes."
-  type        = string
-}
-
 variable "vpc_id" {
   description = "Existing VPC ID for the EKS cluster."
   type        = string
